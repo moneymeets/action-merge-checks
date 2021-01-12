@@ -1,0 +1,15 @@
+name: 'Merge checks'
+description: 'Block merge if PR contains fixup commits or is not up to date with master'
+
+runs:
+
+  using: "composite"
+
+  steps:
+
+    - run: python3 -m merge_checks
+      shell: bash
+      env:
+        BASE_REF: ${{ github.base_ref }}
+        HEAD_REF: ${{ github.head_ref }}
+        PYTHONPATH: ${{ github.action_path }}
