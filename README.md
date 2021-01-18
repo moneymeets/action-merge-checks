@@ -5,15 +5,15 @@ name: Merge checks
 
 on:
   pull_request:
-    types: [synchronize]
+    types: [opened, synchronize]
 
 jobs:
   merge-checks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Merge checks
-        uses: moneymeets/action-merge-checks
+        uses: moneymeets/action-merge-checks@master
 ```
