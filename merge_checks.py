@@ -2,16 +2,16 @@ import os
 import subprocess
 
 
-def main(base_ref: str, head_ref: str):
-    print(f"Checking out BASE_REF ({base_ref}) and HEAD_REF ({head_ref})...")
-
+def main(head_hash: str, base_ref: str):
+    print(f"Checking out {base_ref}...")
     subprocess.run(f"git fetch --depth=1 origin {base_ref}", check=True, shell=True)
-    subprocess.run(f"git fetch origin {head_ref}", check=True, shell=True)
-
     base_revision = subprocess.run(f"git rev-parse origin/{base_ref}", check=True, shell=True, capture_output=True)
-    head_revision = subprocess.run(f"git rev-parse origin/{head_ref}", check=True, shell=True, capture_output=True)
 
-    base_hash, head_hash = (output.decode().strip() for output in (base_revision.stdout, head_revision.stdout))
+    base_hash = base_revision.stdout.decode().strip()
+
+    if head_hash == base_hash:
+        print(f"HEAD identical with {base_ref}, no commits to check")
+        exit(0)
 
     print("Getting commit list...")
     log = subprocess.run(f"git log --pretty='format:%H %s' {base_hash}..{head_hash}",
@@ -42,4 +42,5 @@ def main(base_ref: str, head_ref: str):
 
 
 if __name__ == "__main__":
-    main(os.environ["BASE_REF"], os.environ["HEAD_REF"])
+    main(head_hash=os.environ["GITHUB_SHA"], base_ref="master")
+    exit(0)
