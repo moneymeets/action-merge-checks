@@ -15,6 +15,7 @@ def main(head_hash: str, base_ref: str) -> int:
         return 0
 
     print("Getting commit list...")
+    subprocess.run("git fetch --unshallow", check=True, shell=True)
     log = subprocess.run(f"git log --pretty='format:%H %s' {base_hash}..{head_hash}",
                          check=True, shell=True, capture_output=True)
 
