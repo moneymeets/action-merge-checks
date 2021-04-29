@@ -19,10 +19,11 @@ def main(head_hash: str, base_ref: str) -> int:
     log = subprocess.run(f"git log --pretty='format:%H %s' {base_hash}..{head_hash}",
                          check=True, shell=True, capture_output=True)
 
-    commits, subjects = zip(*(line.decode().split(maxsplit=1) for line in log.stdout.splitlines()))
+    commits, subject_markers, _ = zip(*(line.decode().split(maxsplit=2) for line in log.stdout.splitlines()))
 
     fixups, squashes = (
-        len([subject for subject in subjects if marker in subject]) for marker in ("fixup!", "squash!")
+        sum(1 for subject_marker in subject_markers if subject_marker == marker)
+        for marker in ("fixup!", "squash!")
     )
 
     if fixups or squashes:
