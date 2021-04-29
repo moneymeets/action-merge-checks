@@ -33,3 +33,9 @@ jobs:
       - name: Lint
         run: |
           poetry run flake8
+
+      - name: Test
+        run: poetry run coverage run -m pytest
+
+      - name: Report coverage
+        run: poetry run coverage report --fail-under=72
