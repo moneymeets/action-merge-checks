@@ -10,9 +10,14 @@ import merge_checks
 @patch.object(merge_checks, "get_base_revision")
 @patch.object(merge_checks, "fetch_head_only")
 class MergeCheckTest(TestCase):
-
-    def test_happy_path(self, fetch_head_only, get_base_revision, fetch_full_history, get_subject_markers,
-                        has_merge_commits):
+    def test_happy_path(
+        self,
+        fetch_head_only,
+        get_base_revision,
+        fetch_full_history,
+        get_subject_markers,
+        has_merge_commits,
+    ):
         head_hash = "987xyz"
         base_ref = "baseref"
         base_hash = "123abc"
@@ -28,8 +33,14 @@ class MergeCheckTest(TestCase):
         get_subject_markers.assert_called_once_with(head_hash, base_hash)
         has_merge_commits.assert_called_once_with(head_hash, base_hash)
 
-    def test_early_exit_no_commits(self, fetch_head_only, get_base_revision, fetch_full_history, get_subject_markers,
-                                   has_merge_commits):
+    def test_early_exit_no_commits(
+        self,
+        fetch_head_only,
+        get_base_revision,
+        fetch_full_history,
+        get_subject_markers,
+        has_merge_commits,
+    ):
         base_ref = "baseref"
         base_hash = "123abc"
 
@@ -43,8 +54,14 @@ class MergeCheckTest(TestCase):
         get_subject_markers.assert_not_called()
         has_merge_commits.assert_not_called()
 
-    def test_fixup_found(self, fetch_head_only, get_base_revision, fetch_full_history, get_subject_markers,
-                         has_merge_commits):
+    def test_fixup_found(
+        self,
+        fetch_head_only,
+        get_base_revision,
+        fetch_full_history,
+        get_subject_markers,
+        has_merge_commits,
+    ):
         head_hash = "987xyz"
         base_ref = "baseref"
         base_hash = "123abc"
@@ -59,8 +76,14 @@ class MergeCheckTest(TestCase):
         get_subject_markers.assert_called_once_with(head_hash, base_hash)
         has_merge_commits.assert_not_called()
 
-    def test_squash_found(self, fetch_head_only, get_base_revision, fetch_full_history, get_subject_markers,
-                          has_merge_commits):
+    def test_squash_found(
+        self,
+        fetch_head_only,
+        get_base_revision,
+        fetch_full_history,
+        get_subject_markers,
+        has_merge_commits,
+    ):
         head_hash = "987xyz"
         base_ref = "baseref"
         base_hash = "123abc"
@@ -76,8 +99,14 @@ class MergeCheckTest(TestCase):
         get_subject_markers.assert_called_once_with(head_hash, base_hash)
         has_merge_commits.assert_not_called()
 
-    def test_merge_commit_found(self, fetch_head_only, get_base_revision, fetch_full_history, get_subject_markers,
-                                has_merge_commits):
+    def test_merge_commit_found(
+        self,
+        fetch_head_only,
+        get_base_revision,
+        fetch_full_history,
+        get_subject_markers,
+        has_merge_commits,
+    ):
         head_hash = "987xyz"
         base_ref = "baseref"
         base_hash = "123abc"
