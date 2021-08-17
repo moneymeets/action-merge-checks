@@ -8,19 +8,25 @@ authors = ["moneymeets GmbH <service@moneymeets.com>"]
 python = "^3.9"
 
 [tool.poetry.dev-dependencies]
+coverage = "*"
+pytest = "*"
+
 black = "*"
 flake8 = "*"
 flake8-black = "*"
-flake8-quotes = "*"
 flake8-coding = "*"
 flake8-commas = "*"
-flake8-import-order = "*"
-pytest = "*"
-coverage = "*"
+flake8-isort = "*"
+flake8-quotes = "*"
+isort = {extras = ["pyproject"], version = "*"}
 
 [tool.black]
 line-length = 120
 target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
