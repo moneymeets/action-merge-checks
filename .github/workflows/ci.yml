@@ -13,7 +13,9 @@ jobs:
         uses: moneymeets/action-setup-python-poetry@master
 
       - name: Lint
-        run: poetry run flake8
+        run: |
+          find . -name '*.py' | xargs poetry run add-trailing-comma --py36-plus
+          poetry run flake8
 
       - name: Test
         run: poetry run coverage run -m pytest
