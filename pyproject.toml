@@ -8,8 +8,8 @@ authors = ["moneymeets GmbH <service@moneymeets.com>"]
 python = "^3.10"
 
 [tool.poetry.dev-dependencies]
-coverage = "*"
 pytest = "*"
+pytest-cov = "*"
 
 add-trailing-comma = "*"
 black = "*"

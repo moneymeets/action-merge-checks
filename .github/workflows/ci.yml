@@ -18,7 +18,4 @@ jobs:
           poetry run flake8
 
       - name: Test
-        run: poetry run coverage run -m pytest
-
-      - name: Report coverage
-        run: poetry run coverage report --fail-under=96
+        run: poetry run pytest --cov --cov-fail-under=96
