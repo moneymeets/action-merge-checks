@@ -1,7 +1,5 @@
-import os
 import re
 import subprocess
-import sys
 from typing import Sequence
 
 # https://github.com/moneymeets/moneymeets-docs/blob/master/_posts/2020-03-18-commit-message-branch-name-guidelines.md
@@ -53,13 +51,13 @@ def has_wrong_commit_message(subject_markers: Sequence[str]) -> Sequence[str]:
     )
 
 
-def main(head_hash: str, base_ref: str) -> int:
+def get_commit_checks_result(head_hash: str, base_ref: str) -> tuple[bool, str]:
     fetch_head_only(base_ref)
     base_hash = get_base_revision(base_ref)
 
     if head_hash == base_hash:
         print(f"HEAD identical with {base_ref}, no commits to check")
-        return 0
+        return True, "No commits to check"
 
     fetch_full_history()
     subjects = get_subject(head_hash, base_hash)
@@ -71,29 +69,24 @@ def main(head_hash: str, base_ref: str) -> int:
 
     if fixups or squashes:
         print(f"Found {fixups} fixup and {squashes} squash commits!")
-        return 1
+        return False, f"{fixups} fixup and {squashes} squash commits found"
     else:
         print("No fixups or squashes found, check passed!")
 
     if has_merge_commits(head_hash, base_hash):
         print("Branch contains merge commits!")
-        return 1
+        return False, "Contains merge commits"
     else:
         print("Branch does not contain merge commits, check passed!")
 
-    incorrect_commit_messages = has_wrong_commit_message(subjects)
-    if incorrect_commit_messages:
+    if incorrect_commit_messages := has_wrong_commit_message(subjects):
         print(
             f"Found invalid commit message(s), allowed types: {ALLOWED_COMMIT_MESSAGE_TYPES}\n"
             f"{chr(10).join(incorrect_commit_messages)}",
         )
-        return 1
+        return False, "Invalid commit message format found"
     else:
         print("Commit messages are correct, check passed!")
 
     print("All checks passed!")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main(head_hash=os.environ["GITHUB_SHA"], base_ref="master"))
+    return True, "All checks passed"

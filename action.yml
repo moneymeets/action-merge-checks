@@ -1,5 +1,9 @@
 name: 'Merge checks'
-description: 'Block merge if PR contains fixup commits or is not up to date with master'
+description: 'Set a merge check status for the triggering commit to report on any problems that would block a merge.'
+inputs:
+  github_token:
+    description: 'Token with repository permissions, e.g. secrets.GITHUB_TOKEN of the caller workflow'
+    required: true
 
 runs:
 
@@ -11,7 +15,12 @@ runs:
       with:
         python-version: '3.10'
 
-    - run: python3 -m merge_checks
+    # Build and install "merge-checks" project from pyproject.toml in current directory
+    - run: pip install .
+      shell: bash
+      working-directory: ${{ github.action_path }}
+
+    - run: merge_checks_runner
       shell: bash
       env:
-        PYTHONPATH: ${{ github.action_path }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}

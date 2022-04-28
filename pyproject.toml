@@ -1,11 +1,15 @@
 [tool.poetry]
-name = "action-merge-checks"
+name = "merge-checks"
 version = "0.1.0"
 description = "GitHub Merge Checks"
 authors = ["moneymeets GmbH <service@moneymeets.com>"]
 
+[tool.poetry.scripts]
+merge_checks_runner = 'merge_checks.runner:run'
+
 [tool.poetry.dependencies]
 python = "^3.10"
+PyGithub = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
@@ -31,7 +35,7 @@ line_length = 120
 [tool.coverage.run]
 branch = true
 source = ["."]
-omit = ["test_*.py"]
+omit = ["tests/*.py"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
