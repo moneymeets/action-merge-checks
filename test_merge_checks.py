@@ -6,7 +6,7 @@ import merge_checks
 
 
 @patch.object(merge_checks, "has_merge_commits")
-@patch.object(merge_checks, "get_subject_markers")
+@patch.object(merge_checks, "get_subject")
 @patch.object(merge_checks, "fetch_full_history")
 @patch.object(merge_checks, "get_base_revision")
 @patch.object(merge_checks, "fetch_head_only")
@@ -16,7 +16,7 @@ class MergeCheckTest(TestCase):
         mock_fetch_head_only,
         mock_get_base_revision,
         mock_fetch_full_history,
-        mock_get_subject_markers,
+        mock_get_subject,
         mock_has_merge_commits,
     ):
         head_hash = "987xyz"
@@ -24,14 +24,14 @@ class MergeCheckTest(TestCase):
         base_hash = "123abc"
 
         mock_get_base_revision.return_value = base_hash
-        mock_get_subject_markers.return_value = ("feat(component):",)
+        mock_get_subject.return_value = ("feat(component): subject",)
         mock_has_merge_commits.return_value = False
 
         self.assertEqual(0, merge_checks.main(head_hash=head_hash, base_ref=base_ref))
         mock_fetch_head_only.assert_called_once_with(base_ref)
         mock_get_base_revision.assert_called_once_with(base_ref)
         mock_fetch_full_history.assert_called_once()
-        mock_get_subject_markers.assert_called_once_with(head_hash, base_hash)
+        mock_get_subject.assert_called_once_with(head_hash, base_hash)
         mock_has_merge_commits.assert_called_once_with(head_hash, base_hash)
 
     def test_early_exit_no_commits(
@@ -39,7 +39,7 @@ class MergeCheckTest(TestCase):
         mock_fetch_head_only,
         mock_get_base_revision,
         mock_fetch_full_history,
-        mock_get_subject_markers,
+        mock_get_subject,
         mock_has_merge_commits,
     ):
         base_ref = "baseref"
@@ -52,7 +52,7 @@ class MergeCheckTest(TestCase):
         mock_fetch_head_only.assert_called_once_with(base_ref)
         mock_get_base_revision.assert_called_once_with(base_ref)
         mock_fetch_full_history.assert_not_called()
-        mock_get_subject_markers.assert_not_called()
+        mock_get_subject.assert_not_called()
         mock_has_merge_commits.assert_not_called()
 
     def test_fixup_found(
@@ -60,21 +60,21 @@ class MergeCheckTest(TestCase):
         mock_fetch_head_only,
         mock_get_base_revision,
         mock_fetch_full_history,
-        mock_get_subject_markers,
+        mock_get_subject,
         mock_has_merge_commits,
     ):
         head_hash = "987xyz"
         base_ref = "baseref"
         base_hash = "123abc"
         mock_get_base_revision.return_value = base_hash
-        mock_get_subject_markers.return_value = ("feat(component):", "fixup!")
+        mock_get_subject.return_value = ("feat(component):", "fixup!")
         mock_has_merge_commits.return_value = False
 
         self.assertEqual(1, merge_checks.main(head_hash=head_hash, base_ref=base_ref))
         mock_fetch_head_only.assert_called_once_with(base_ref)
         mock_get_base_revision.assert_called_once_with(base_ref)
         mock_fetch_full_history.assert_called_once()
-        mock_get_subject_markers.assert_called_once_with(head_hash, base_hash)
+        mock_get_subject.assert_called_once_with(head_hash, base_hash)
         mock_has_merge_commits.assert_not_called()
 
     def test_squash_found(
@@ -82,7 +82,7 @@ class MergeCheckTest(TestCase):
         mock_fetch_head_only,
         mock_get_base_revision,
         mock_fetch_full_history,
-        mock_get_subject_markers,
+        mock_get_subject,
         mock_has_merge_commits,
     ):
         head_hash = "987xyz"
@@ -90,14 +90,14 @@ class MergeCheckTest(TestCase):
         base_hash = "123abc"
 
         mock_get_base_revision.return_value = base_hash
-        mock_get_subject_markers.return_value = ("feat(component):", "squash!")
+        mock_get_subject.return_value = ("feat(component):", "squash!")
         mock_has_merge_commits.return_value = False
 
         self.assertEqual(1, merge_checks.main(head_hash=head_hash, base_ref=base_ref))
         mock_fetch_head_only.assert_called_once_with(base_ref)
         mock_get_base_revision.assert_called_once_with(base_ref)
         mock_fetch_full_history.assert_called_once()
-        mock_get_subject_markers.assert_called_once_with(head_hash, base_hash)
+        mock_get_subject.assert_called_once_with(head_hash, base_hash)
         mock_has_merge_commits.assert_not_called()
 
     def test_merge_commit_found(
@@ -105,7 +105,7 @@ class MergeCheckTest(TestCase):
         mock_fetch_head_only,
         mock_get_base_revision,
         mock_fetch_full_history,
-        mock_get_subject_markers,
+        mock_get_subject,
         mock_has_merge_commits,
     ):
         head_hash = "987xyz"
@@ -113,14 +113,37 @@ class MergeCheckTest(TestCase):
         base_hash = "123abc"
 
         mock_get_base_revision.return_value = base_hash
-        mock_get_subject_markers.return_value = ("feat(component):",)
+        mock_get_subject.return_value = ("feat(component):",)
         mock_has_merge_commits.return_value = True
 
         self.assertEqual(1, merge_checks.main(head_hash=head_hash, base_ref=base_ref))
         mock_fetch_head_only.assert_called_once_with(base_ref)
         mock_get_base_revision.assert_called_once_with(base_ref)
         mock_fetch_full_history.assert_called_once()
-        mock_get_subject_markers.assert_called_once_with(head_hash, base_hash)
+        mock_get_subject.assert_called_once_with(head_hash, base_hash)
+        mock_has_merge_commits.assert_called_once_with(head_hash, base_hash)
+
+    def test_has_wrong_commit_message(
+        self,
+        mock_fetch_head_only,
+        mock_get_base_revision,
+        mock_fetch_full_history,
+        mock_get_subject,
+        mock_has_merge_commits,
+    ):
+        head_hash = "987xyz"
+        base_ref = "baseref"
+        base_hash = "123abc"
+
+        mock_get_base_revision.return_value = base_hash
+        mock_get_subject.return_value = ("chores(component): subject",)
+        mock_has_merge_commits.return_value = False
+
+        self.assertEqual(1, merge_checks.main(head_hash=head_hash, base_ref=base_ref))
+        mock_fetch_head_only.assert_called_once_with(base_ref)
+        mock_get_base_revision.assert_called_once_with(base_ref)
+        mock_fetch_full_history.assert_called_once()
+        mock_get_subject.assert_called_once_with(head_hash, base_hash)
         mock_has_merge_commits.assert_called_once_with(head_hash, base_hash)
 
 
@@ -149,12 +172,17 @@ class ExternalCallTest(TestCase):
             self.assertTrue(merge_checks.has_merge_commits("head", "base"))
             mock_run_process.assert_called_once()
 
-    def test_get_subject_markers(self):
-        with self._mock_run_process(
-            "\n".join(("feat(test): we test this", "fixup! feat(test): we test this")),
-        ) as mock_run_process:
-            self.assertEqual(merge_checks.get_subject_markers("head", "base"), ("feat(test):", "fixup!"))
+    def test_get_subject(self):
+        commits = ("feat(test): we test this", "fixup! feat(test): we test this")
+        with self._mock_run_process("\n".join(commits)) as mock_run_process:
+            self.assertEqual(merge_checks.get_subject("head", "base"), commits)
             mock_run_process.assert_called_once()
+
+    def test_get_subject_markers(self):
+        self.assertEqual(
+            merge_checks.get_subject_markers(("feat(test): we test this", "fixup! feat(test): we test this")),
+            ("feat(test):", "fixup!"),
+        )
 
     def test_fetch_full_history(self):
         with self._mock_run_process("") as mock_run_process:
@@ -170,3 +198,23 @@ class ExternalCallTest(TestCase):
         with self._mock_run_process("") as mock_run_process:
             merge_checks.fetch_head_only("base")
             mock_run_process.assert_called_once()
+
+    def test_has_wrong_commit_message(self):
+        # Correct message
+        self.assertEqual(merge_checks.has_wrong_commit_message(("chore(scope): test",)), ())
+        self.assertEqual(
+            merge_checks.has_wrong_commit_message(("feat(action): check commit message syntax and types",)),
+            (),
+        )
+
+        # Incorrect message
+        self.assertEqual(merge_checks.has_wrong_commit_message(("chores(scope): test",)), ("chores(scope): test",))
+        self.assertEqual(merge_checks.has_wrong_commit_message(("chore(): test",)), ("chore(): test",))
+        self.assertEqual(
+            merge_checks.has_wrong_commit_message(("chores(scope1 scope2): test", "feat(scope): test")),
+            ("chores(scope1 scope2): test",),
+        )
+        self.assertEqual(
+            merge_checks.has_wrong_commit_message(("chore(scope):", "feat(scope):test")),
+            ("chore(scope):", "feat(scope):test"),
+        )
