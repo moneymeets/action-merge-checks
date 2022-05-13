@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from dataclasses import asdict, dataclass
@@ -45,6 +46,12 @@ def get_commit_and_status() -> tuple[Commit, Status]:
 
 
 def run():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S%z",
+    )
+
     commit, status = get_commit_and_status()
 
     set_commit_status(
@@ -54,6 +61,7 @@ def run():
     )
 
     checks_passed, summary = get_commit_checks_result(head_hash=commit.commit_sha, base_ref=BASE_REF)
+    logging.info(f"Checks summary: {summary}")
 
     set_commit_status(
         **(asdict(commit) | asdict(status)),
