@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from dataclasses import asdict, dataclass
 from enum import Enum
 
@@ -68,7 +67,3 @@ def run():
         state=(State.SUCCESS if checks_passed else State.FAILURE).value,
         description=summary,
     )
-
-    # TODO: Remove after required status checks in GitHub have been switched to "Merge checks / Result"
-    if not checks_passed:
-        sys.exit(1)
