@@ -40,9 +40,7 @@ class MergeChecksRunnerTest(TestCase):
         )
         mock_get_commit_checks_result.return_value = (False, "test summary")
 
-        # TODO: Remove after required status checks in GitHub have been switched to "Merge checks / Result"
-        with self.assertRaises(SystemExit):
-            run()
+        run()
 
         mock_get_commit_checks_result.assert_called_once()
         self.assertEqual("pending", mock_set_commit_status.call_args_list[0].kwargs.get("state"))
