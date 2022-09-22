@@ -4,6 +4,15 @@ inputs:
   github_token:
     description: 'Token with repository permissions, e.g. secrets.GITHUB_TOKEN of the caller workflow'
     required: true
+  head_sha:
+    description: |
+      Hash of HEAD commit.
+      
+      We can't consistently use the built-in GITHUB_SHA variable due to differences
+      in triggers, therefore HEAD_SHA should be passed explicitly and either set to
+      GITHUB_SHA, or to another appropriate value.
+    default: None  # TODO: Remove after merge-check.yml have been changed
+    required: false  # TODO: Set to true after merge-check.yml have been changed
 
 runs:
 
@@ -24,3 +33,4 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
+        HEAD_SHA: ${{ inputs.head_sha }}

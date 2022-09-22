@@ -32,8 +32,9 @@ class State(Enum):
 def get_commit_and_status() -> tuple[Commit, Status]:
     commit = Commit(
         repository=os.environ["GITHUB_REPOSITORY"],
-        commit_sha=os.environ["GITHUB_SHA"],
         token=os.environ["GITHUB_TOKEN"],
+        # TODO: Set to os.environ["HEAD_SHA"] without fallback, after merge-checks.yml has been updated
+        commit_sha=os.environ["HEAD_SHA"] if os.environ["HEAD_SHA"] != "None" else os.environ["GITHUB_SHA"],
     )
 
     status = Status(
@@ -59,7 +60,11 @@ def run():
         description="Merge checks running",
     )
 
-    checks_passed, summary = get_commit_checks_result(head_hash=commit.commit_sha, base_ref=BASE_REF)
+    checks_passed, summary = get_commit_checks_result(
+        repository_name=commit.repository,
+        github_token=commit.token,
+        head_hash=commit.commit_sha,
+    )
     logging.info(f"Checks summary: {summary}")
 
     set_commit_status(
