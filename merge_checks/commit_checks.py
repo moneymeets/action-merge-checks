@@ -1,47 +1,36 @@
 import logging
 import re
-import subprocess
 from typing import Sequence
+
+import github
+from github.Commit import Commit
+from github.Repository import Repository
 
 # https://github.com/moneymeets/moneymeets-docs/blob/master/_posts/2020-03-18-commit-message-branch-name-guidelines.md
 ALLOWED_COMMIT_MESSAGE_TYPES = ("chore", "ci", "docs", "feat", "fix", "perf", "refactor", "style", "test")
+LOGGING_PREFIX = "\n  "
 
 
-def _run_process(command: str) -> str:
-    return subprocess.run(
-        command,
-        check=True,
-        shell=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+def get_commits(repository: Repository, head_hash: str) -> Sequence[Commit]:
+    return tuple(set(repository.get_commits(head_hash)) - set(repository.get_commits(repository.default_branch)))
 
 
-def fetch_head_only(base_ref: str):
-    logging.info(f"Checking out {base_ref}...")
-    _run_process(f"git fetch --depth=1 origin {base_ref}")
-
-
-def fetch_full_history():
-    logging.info("Getting commit list...")
-    _run_process("git fetch --unshallow")
-
-
-def get_base_revision(base_ref: str) -> str:
-    return _run_process(f"git rev-parse origin/{base_ref}")
-
-
-def get_subject(head_hash: str, base_hash: str) -> Sequence[str]:
-    return tuple(_run_process(f"git log --pretty='format:%s' {base_hash}..{head_hash}").splitlines())
+def get_commit_messages(repository: Repository, head_hash: str) -> Sequence[str]:
+    logging.info("Getting commit messages...")
+    return tuple(commit.commit.message for commit in get_commits(repository=repository, head_hash=head_hash))
 
 
 def get_subject_markers(subjects: Sequence[str]) -> Sequence[str]:
+    logging.info("Getting subject markers...")
     return tuple(line.split(maxsplit=1)[0] for line in subjects)
 
 
-def has_merge_commits(head_hash: str, base_hash: str) -> bool:
-    parents = _run_process(f"git log --pretty=%p {base_hash}..{head_hash}").splitlines()
-    return any(len(line.split(maxsplit=1)) > 1 for line in parents)
+def has_merge_commits(repository: Repository, head_hash: str) -> bool:
+    logging.info("Checking for merge commits...")
+    return any(
+        len(parents) > 1
+        for parents in tuple(commit.parents for commit in get_commits(repository=repository, head_hash=head_hash))
+    )
 
 
 def has_wrong_commit_message(subject_markers: Sequence[str]) -> Sequence[str]:
@@ -52,16 +41,19 @@ def has_wrong_commit_message(subject_markers: Sequence[str]) -> Sequence[str]:
     )
 
 
-def get_commit_checks_result(head_hash: str, base_ref: str) -> tuple[bool, str]:
-    fetch_head_only(base_ref)
-    base_hash = get_base_revision(base_ref)
+def get_commit_checks_result(repository_name: str, github_token: str, head_hash: str) -> tuple[bool, str]:
 
-    if head_hash == base_hash:
-        logging.warning(f"HEAD identical with {base_ref}, no commits to check")
+    repository = github.Github(login_or_token=github_token).get_repo(repository_name)
+
+    if head_hash == repository.get_branch(repository.default_branch).commit.sha:
+        logging.warning(f"HEAD identical with {repository.default_branch}, no commits to check")
         return True, "No commits to check"
 
-    fetch_full_history()
-    subjects = get_subject(head_hash, base_hash)
+    subjects = get_commit_messages(repository=repository, head_hash=head_hash)
+    logging.info(
+        f"Found the following commit messages in branch:{LOGGING_PREFIX}{LOGGING_PREFIX.join(subjects)}",
+    )
+
     subject_markers = get_subject_markers(subjects)
 
     fixups, squashes = (
@@ -73,15 +65,15 @@ def get_commit_checks_result(head_hash: str, base_ref: str) -> tuple[bool, str]:
     else:
         logging.info("No fixups or squashes found, check passed!")
 
-    if has_merge_commits(head_hash, base_hash):
+    if has_merge_commits(repository=repository, head_hash=head_hash):
         return False, "Contains merge commits"
     else:
         logging.info("Branch does not contain merge commits, check passed!")
 
     if incorrect_commit_messages := has_wrong_commit_message(subjects):
         logging.info(
-            f"Found invalid commit message(s), allowed types: {ALLOWED_COMMIT_MESSAGE_TYPES}\n"
-            f"{chr(10).join(incorrect_commit_messages)}",
+            f"Found invalid commit message(s): {LOGGING_PREFIX}{LOGGING_PREFIX.join(incorrect_commit_messages)}"
+            f"\nAllowed types are: {ALLOWED_COMMIT_MESSAGE_TYPES}",
         )
         return False, "Invalid commit message format found"
     else:
