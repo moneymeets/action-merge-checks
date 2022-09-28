@@ -1,5 +1,7 @@
 # action-merge-checks
 
+Test!
+
 For example, use the following workflow in your repositories:
 
 ```yaml
