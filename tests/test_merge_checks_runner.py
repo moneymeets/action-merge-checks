@@ -6,6 +6,7 @@ from merge_checks.runner import Commit, Status, run
 
 
 @patch.object(runner, "get_commit_checks_result")
+@patch.object(runner, "get_repository")
 @patch.object(runner, "get_commit_and_status")
 @patch.object(runner, "set_commit_status")
 class MergeChecksRunnerTest(TestCase):
@@ -13,6 +14,7 @@ class MergeChecksRunnerTest(TestCase):
         self,
         mock_set_commit_status,
         mock_get_commit_and_status,
+        mock_get_repository,
         mock_get_commit_checks_result,
     ):
         mock_get_commit_and_status.return_value = (
@@ -23,7 +25,7 @@ class MergeChecksRunnerTest(TestCase):
 
         run()
 
-        mock_get_commit_checks_result.assert_called_once()
+        mock_get_repository.assert_called_once()
         self.assertEqual("pending", mock_set_commit_status.call_args_list[0].kwargs.get("state"))
         mock_get_commit_checks_result.assert_called_once()
         self.assertEqual("success", mock_set_commit_status.call_args_list[1].kwargs.get("state"))
@@ -32,6 +34,7 @@ class MergeChecksRunnerTest(TestCase):
         self,
         mock_set_commit_status,
         mock_get_commit_and_status,
+        mock_get_repository,
         mock_get_commit_checks_result,
     ):
         mock_get_commit_and_status.return_value = (
@@ -42,7 +45,7 @@ class MergeChecksRunnerTest(TestCase):
 
         run()
 
-        mock_get_commit_checks_result.assert_called_once()
+        mock_get_repository.assert_called_once()
         self.assertEqual("pending", mock_set_commit_status.call_args_list[0].kwargs.get("state"))
         mock_get_commit_checks_result.assert_called_once()
         self.assertEqual("failure", mock_set_commit_status.call_args_list[1].kwargs.get("state"))
