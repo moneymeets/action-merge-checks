@@ -9,8 +9,6 @@ from github.Repository import Repository
 from .commit_checks import get_base_sha, get_commit_checks_result, get_commits
 from .commit_status_setter import set_commit_status
 
-BASE_REF = "master"
-
 
 @dataclass
 class Commit:
