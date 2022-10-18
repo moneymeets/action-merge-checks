@@ -34,8 +34,7 @@ def get_commit_and_status() -> tuple[Commit, Status]:
     commit = Commit(
         repository=os.environ["GITHUB_REPOSITORY"],
         token=os.environ["GITHUB_TOKEN"],
-        # TODO: Set to os.environ["HEAD_SHA"] without fallback, after merge-checks.yml has been updated
-        commit_sha=os.environ["HEAD_SHA"] if os.environ["HEAD_SHA"] != "None" else os.environ["GITHUB_SHA"],
+        commit_sha=os.environ["HEAD_SHA"],
     )
 
     status = Status(
