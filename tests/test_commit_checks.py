@@ -23,6 +23,16 @@ class TestGetCommitChecksResult(TestCase):
             commit_checks.get_commit_checks_result(commits=(mock_commit,)),
         )
 
+    def test_revert_commit_passes_checks(self):
+        mock_commit = Mock()
+        mock_commit.commit.message = 'Revert "feat(compenent): subject"'
+        mock_commit.parents = (Mock(),)
+
+        self.assertEqual(
+            (True, "All checks passed"),
+            commit_checks.get_commit_checks_result(commits=(mock_commit,)),
+        )
+
     def test_fixup_found(self):
         mock_commit = Mock()
         mock_commit.commit.message = "fixup! feat(component): subject"

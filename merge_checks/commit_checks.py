@@ -23,9 +23,9 @@ def get_commit_messages(commits: Sequence[Commit]) -> Sequence[str]:
     return tuple(commit.commit.message for commit in commits)
 
 
-def get_subject_markers(subjects: Sequence[str]) -> Sequence[str]:
+def get_subject_markers(messages: Sequence[str]) -> Sequence[str]:
     logging.info("Getting subject markers...")
-    return tuple(line.split(maxsplit=1)[0] for line in subjects)
+    return tuple(strip_allowed_markers(line).split(maxsplit=1)[0] for line in messages)
 
 
 def has_merge_commits(commits: Sequence[Commit]) -> bool:
@@ -33,21 +33,26 @@ def has_merge_commits(commits: Sequence[Commit]) -> bool:
     return any(len(parents) > 1 for parents in tuple(commit.parents for commit in commits))
 
 
-def has_wrong_commit_message(subject_markers: Sequence[str]) -> Sequence[str]:
+def strip_allowed_markers(message: str) -> str:
+    return message.removeprefix('Revert "').removesuffix('"')
+
+
+def has_wrong_commit_message(messages: Sequence[str]) -> Sequence[str]:
     return tuple(
-        marker
-        for marker in subject_markers
-        if re.match(rf"^({'|'.join(ALLOWED_COMMIT_MESSAGE_TYPES)})\([a-z\d-]+\): .+", marker) is None
+        message
+        for message in messages
+        if re.match(rf"^({'|'.join(ALLOWED_COMMIT_MESSAGE_TYPES)})\([a-z\d-]+\): .+", strip_allowed_markers(message))
+        is None
     )
 
 
 def get_commit_checks_result(commits: Sequence[Commit]) -> tuple[bool, str]:
-    subjects = get_commit_messages(commits)
+    messages = get_commit_messages(commits)
     logging.info(
-        f"Found the following commit messages in branch:{LOGGING_PREFIX}{LOGGING_PREFIX.join(subjects)}",
+        f"Found the following commit messages in branch:{LOGGING_PREFIX}{LOGGING_PREFIX.join(messages)}",
     )
 
-    subject_markers = get_subject_markers(subjects)
+    subject_markers = get_subject_markers(messages)
 
     fixups, squashes = (
         sum(1 for subject_marker in subject_markers if subject_marker == marker) for marker in ("fixup!", "squash!")
@@ -63,7 +68,7 @@ def get_commit_checks_result(commits: Sequence[Commit]) -> tuple[bool, str]:
     else:
         logging.info("Branch does not contain merge commits, check passed!")
 
-    if incorrect_commit_messages := has_wrong_commit_message(subjects):
+    if incorrect_commit_messages := has_wrong_commit_message(messages):
         logging.info(
             f"Found invalid commit message(s): {LOGGING_PREFIX}{LOGGING_PREFIX.join(incorrect_commit_messages)}"
             f"\nAllowed types are: {ALLOWED_COMMIT_MESSAGE_TYPES}",
