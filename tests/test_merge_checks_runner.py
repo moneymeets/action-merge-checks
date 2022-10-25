@@ -6,6 +6,7 @@ from merge_checks.runner import Commit, Status, run
 
 
 @patch.object(runner, "get_commit_checks_result")
+@patch.object(runner, "get_base_sha")
 @patch.object(runner, "get_repository")
 @patch.object(runner, "get_commit_and_status")
 @patch.object(runner, "set_commit_status")
@@ -15,6 +16,7 @@ class MergeChecksRunnerTest(TestCase):
         mock_set_commit_status,
         mock_get_commit_and_status,
         mock_get_repository,
+        mock_get_base_sha,
         mock_get_commit_checks_result,
     ):
         mock_get_commit_and_status.return_value = (
@@ -26,8 +28,30 @@ class MergeChecksRunnerTest(TestCase):
         run()
 
         mock_get_repository.assert_called_once()
+        mock_get_base_sha.assert_called_once()
         self.assertEqual("pending", mock_set_commit_status.call_args_list[0].kwargs.get("state"))
         mock_get_commit_checks_result.assert_called_once()
+        self.assertEqual("success", mock_set_commit_status.call_args_list[1].kwargs.get("state"))
+
+    def test_no_commits_to_check(
+        self,
+        mock_set_commit_status,
+        mock_get_commit_and_status,
+        mock_get_repository,
+        mock_get_base_sha,
+        mock_get_commit_checks_result,
+    ):
+        mock_get_commit_and_status.return_value = (
+            Commit(repository="test", commit_sha="123", token="456"),
+            Status(status_name="test status", details_url="example.com"),
+        )
+        mock_get_base_sha.return_value = "123"
+        run()
+
+        mock_get_repository.assert_called_once()
+        mock_get_base_sha.assert_called_once()
+        self.assertEqual("pending", mock_set_commit_status.call_args_list[0].kwargs.get("state"))
+        mock_get_commit_checks_result.assert_not_called()
         self.assertEqual("success", mock_set_commit_status.call_args_list[1].kwargs.get("state"))
 
     def test_result_state_failure(
@@ -35,6 +59,7 @@ class MergeChecksRunnerTest(TestCase):
         mock_set_commit_status,
         mock_get_commit_and_status,
         mock_get_repository,
+        mock_get_base_sha,
         mock_get_commit_checks_result,
     ):
         mock_get_commit_and_status.return_value = (
@@ -46,6 +71,7 @@ class MergeChecksRunnerTest(TestCase):
         run()
 
         mock_get_repository.assert_called_once()
+        mock_get_base_sha.assert_called_once()
         self.assertEqual("pending", mock_set_commit_status.call_args_list[0].kwargs.get("state"))
         mock_get_commit_checks_result.assert_called_once()
         self.assertEqual("failure", mock_set_commit_status.call_args_list[1].kwargs.get("state"))

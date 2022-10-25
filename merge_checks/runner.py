@@ -69,11 +69,11 @@ def run():
 
     if commit.commit_sha == base_sha:
         logging.warning(f"HEAD identical with {repository.default_branch}, no commits to check")
-        return True, "No commits to check"
-
-    checks_passed, summary = get_commit_checks_result(
-        commits=get_commits(repository=repository, base_sha=base_sha, head_hash=commit.commit_sha),
-    )
+        checks_passed, summary = (True, "No commits to check")
+    else:
+        checks_passed, summary = get_commit_checks_result(
+            commits=get_commits(repository=repository, base_sha=base_sha, head_hash=commit.commit_sha),
+        )
     logging.info(f"Checks summary: {summary}")
 
     set_commit_status(
