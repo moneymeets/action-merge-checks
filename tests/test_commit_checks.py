@@ -71,3 +71,13 @@ class TestGetCommitChecksResult(TestCase):
             (False, "Invalid commit message format found"),
             commit_checks.get_commit_checks_result(commits=(mock_commit,)),
         )
+
+    def test_has_duplicated_commit_messages(self):
+        mock_commit = Mock()
+        mock_commit.commit.message = "feat(component): subject"
+        mock_commit.parents = (Mock(),)
+
+        self.assertEqual(
+            (False, "Duplicated commit messages found"),
+            commit_checks.get_commit_checks_result(commits=(mock_commit, mock_commit)),
+        )

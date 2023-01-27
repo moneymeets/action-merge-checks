@@ -37,6 +37,10 @@ def strip_allowed_markers(message: str) -> str:
     return message.removeprefix('Revert "').removesuffix('"')
 
 
+def has_duplicated_commit_messages(messages: Sequence[str]) -> Sequence[str]:
+    return tuple(set(message for message in messages if messages.count(message) > 1))
+
+
 def has_wrong_commit_message(messages: Sequence[str]) -> Sequence[str]:
     return tuple(
         message
@@ -67,6 +71,12 @@ def get_commit_checks_result(commits: Sequence[Commit]) -> tuple[bool, str]:
         return False, "Contains merge commits"
     else:
         logging.info("Branch does not contain merge commits, check passed!")
+
+    if duplicated_messages := has_duplicated_commit_messages(messages):
+        logging.info(
+            f"Found duplicated commit message(s): {LOGGING_PREFIX}{LOGGING_PREFIX.join(duplicated_messages)}",
+        )
+        return False, "Duplicated commit messages found"
 
     if incorrect_commit_messages := has_wrong_commit_message(messages):
         logging.info(
