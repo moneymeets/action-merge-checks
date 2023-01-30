@@ -11,8 +11,7 @@ inputs:
       We can't consistently use the built-in GITHUB_SHA variable due to differences
       in triggers, therefore HEAD_SHA should be passed explicitly and either set to
       GITHUB_SHA, or to another appropriate value.
-    default: None  # TODO: Remove after merge-check.yml have been changed
-    required: false  # TODO: Set to true after merge-check.yml have been changed
+    required: true
 
 runs:
 
