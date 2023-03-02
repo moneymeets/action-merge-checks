@@ -1,7 +1,7 @@
 import logging
 import os
 from dataclasses import asdict, dataclass
-from enum import Enum
+from enum import StrEnum, auto
 
 import github
 from github.Repository import Repository
@@ -23,11 +23,11 @@ class Status:
     details_url: str
 
 
-class State(Enum):
-    PENDING = "pending"
-    SUCCESS = "success"
-    FAILURE = "failure"
-    ERROR = "error"
+class State(StrEnum):
+    PENDING = auto()
+    SUCCESS = auto()
+    FAILURE = auto()
+    ERROR = auto()
 
 
 def get_commit_and_status() -> tuple[Commit, Status]:
@@ -60,7 +60,7 @@ def run():
 
     set_commit_status(
         **(asdict(commit) | asdict(status)),
-        state=State.PENDING.value,
+        state=State.PENDING,
         description="Merge checks running",
     )
 
@@ -78,6 +78,6 @@ def run():
 
     set_commit_status(
         **(asdict(commit) | asdict(status)),
-        state=str((State.SUCCESS if checks_passed else State.FAILURE).value),
+        state=State.SUCCESS if checks_passed else State.FAILURE,
         description=summary,
     )
