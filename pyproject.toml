@@ -8,29 +8,14 @@ authors = ["moneymeets GmbH <service@moneymeets.com>"]
 merge_checks_runner = 'merge_checks.runner:run'
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "~3.12"
 PyGithub = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
 pytest-cov = "*"
 
-add-trailing-comma = "*"
-black = "*"
-flake8 = "*"
-flake8-black = "*"
-flake8-coding = "*"
-flake8-isort = "*"
-flake8-quotes = "*"
-isort = {extras = ["pyproject"], version = "*"}
-
-[tool.black]
-line-length = 120
-target-version = ["py311"]
-
-[tool.isort]
-profile = "black"
-line_length = 120
+ruff = "*"
 
 [tool.coverage.run]
 branch = true
