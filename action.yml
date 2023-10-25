@@ -12,16 +12,33 @@ inputs:
       in triggers, therefore HEAD_SHA should be passed explicitly and either set to
       GITHUB_SHA, or to another appropriate value.
     required: true
+  python_version:
+    description: "Python version to use"
+    required: false
 
 runs:
 
   using: "composite"
 
   steps:
+    - name: Determine Python version
+      id: detect-versions
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        if [ -z "${{ inputs.python_version }}" ] ; then
+            PYTHON_VERSION="$(sed -n -e '/^\[metadata\]/,/^\[/p' poetry.lock | sed -n -e 's/^python-versions[[:space:]]*=[[:space:]]*//p' | tr -d \"'[:space:]'\'~^)"
+        else
+            PYTHON_VERSION="${{ inputs.python_version }}"
+        fi
+
+        echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+
+
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '${{ steps.detect-versions.outputs.python-version }}'
 
     # Build and install "merge-checks" project from pyproject.toml in current directory
     - run: pip install .
