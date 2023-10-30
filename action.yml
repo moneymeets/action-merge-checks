@@ -21,32 +21,15 @@ runs:
   using: "composite"
 
   steps:
-    - name: Determine Python version
-      id: detect-versions
-      shell: bash
-      working-directory: ${{ github.action_path }}
-      run: |
-        if [ -z "${{ inputs.python_version }}" ] ; then
-            PYTHON_VERSION="$(sed -n -e '/^\[metadata\]/,/^\[/p' poetry.lock | sed -n -e 's/^python-versions[[:space:]]*=[[:space:]]*//p' | tr -d \"'[:space:]'\'~^)"
-        else
-            PYTHON_VERSION="${{ inputs.python_version }}"
-        fi
-
-        echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
-
-
-    - name: Setup Python
-      uses: actions/setup-python@v4
+    - uses: moneymeets/action-setup-python-poetry@master
       with:
-        python-version: '${{ steps.detect-versions.outputs.python-version }}'
+        working_directory: ${{ github.action_path }}
+        # ToDo: Re-enable cache when https://github.com/actions/setup-python/issues/361 is fixed
+        poetry_cache_enabled: 'false'
 
-    # Build and install "merge-checks" project from pyproject.toml in current directory
-    - run: pip install .
+    - run: poetry run --directory ${{ github.action_path }} merge_checks_runner
       shell: bash
-      working-directory: ${{ github.action_path }}
-
-    - run: merge_checks_runner
-      shell: bash
+      working-directory: ${{ github.workspace }}
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         HEAD_SHA: ${{ inputs.head_sha }}
