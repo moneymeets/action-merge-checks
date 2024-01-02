@@ -38,7 +38,7 @@ def strip_allowed_markers(message: str) -> str:
 
 
 def has_duplicated_commit_messages(messages: Sequence[str]) -> Sequence[str]:
-    return tuple(set(message for message in messages if messages.count(message) > 1))
+    return tuple({message for message in messages if messages.count(message) > 1})
 
 
 def has_wrong_commit_message(messages: Sequence[str]) -> Sequence[str]:
