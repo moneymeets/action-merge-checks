@@ -12,7 +12,7 @@ python = "~3.12"
 PyGithub = "*"
 
 [tool.poetry.dev-dependencies]
-pytest = "*"
+pytest = ">=2"
 pytest-cov = "*"
 
 ruff = "*"
