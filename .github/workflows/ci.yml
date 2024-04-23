@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: moneymeets/action-setup-python-poetry@master
+      - uses: moneymeets/action-setup-python-poetry@feature/MD-7262-check-package-versions
 
       - uses: moneymeets/moneymeets-composite-actions/lint-python@master
 
