@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
-      contents: read
-      statuses: write
+      contents: write  # Allow creation of separate branch and push to it
+      pull-requests: write  # Allow creation of PRs
     steps:
       - uses: actions/checkout@v4
         with:
