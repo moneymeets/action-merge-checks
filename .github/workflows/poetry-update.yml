@@ -6,7 +6,7 @@ name: Poetry update
 on:
   workflow_dispatch:
   schedule:
-    - cron: '00 09 * * *' # Every day at 9am
+    - cron: '* 09 01 * *' # Every month at 9am.
 
 jobs:
   poetry-update:
