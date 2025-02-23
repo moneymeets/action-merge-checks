@@ -6,8 +6,11 @@ from enum import StrEnum, auto
 import github
 from github.Repository import Repository
 
-from .commit_checks import get_base_sha, get_commit_checks_result, get_commits
-from .commit_status_setter import set_commit_status
+from merge_checks.commit_checks import get_base_sha, get_commit_checks_result, get_commits
+from merge_checks.commit_status_setter import set_commit_status
+
+STATUS_NAME = "Merge checks / Result"
+STATUS_DESCRIPTION = "Merge checks running"
 
 
 @dataclass
@@ -38,7 +41,7 @@ def get_commit_and_status() -> tuple[Commit, Status]:
     )
 
     status = Status(
-        status_name="Merge checks / Result",
+        status_name=STATUS_NAME,
         details_url=f"{os.environ['GITHUB_SERVER_URL']}/{commit.repository}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
     )
 
@@ -61,7 +64,7 @@ def run():
     set_commit_status(
         **(asdict(commit) | asdict(status)),
         state=State.PENDING,
-        description="Merge checks running",
+        description=STATUS_DESCRIPTION,
     )
 
     repository = get_repository(commit=commit)
@@ -74,7 +77,7 @@ def run():
         checks_passed, summary = get_commit_checks_result(
             commits=get_commits(repository=repository, base_sha=base_sha, head_hash=commit.commit_sha),
         )
-    logging.info(f"Checks summary: {summary}")
+    logging.info(f"Merge checks summary: {summary}")
 
     set_commit_status(
         **(asdict(commit) | asdict(status)),

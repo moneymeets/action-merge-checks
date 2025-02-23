@@ -1,83 +1,66 @@
-from unittest import TestCase
 from unittest.mock import Mock
+
+import pytest
 
 from merge_checks import commit_checks
 from merge_checks.commit_checks import get_base_sha
 
 
-class TestGetBaseSha(TestCase):
-    def test_get_base_sha_returns_expected_sha(self):
-        mock_repository = Mock()
-        mock_repository.get_branch.return_value.commit.sha = "abc123"
-        self.assertEqual("abc123", get_base_sha(mock_repository))
+@pytest.fixture
+def mock():
+    return Mock()
 
 
-class TestGetCommitChecksResult(TestCase):
-    def test_happy_path(self):
-        mock_commit = Mock()
-        mock_commit.commit.message = "feat(component): subject"
-        mock_commit.parents = (Mock(),)
+def test_get_base_sha_returns_expected_sha(mock):
+    mock.repository.get_branch.return_value.commit.sha = "abc123"
+    assert get_base_sha(mock.repository) == "abc123"
 
-        self.assertEqual(
-            (True, "All checks passed"),
-            commit_checks.get_commit_checks_result(commits=(mock_commit,)),
-        )
 
-    def test_revert_commit_passes_checks(self):
-        mock_commit = Mock()
-        mock_commit.commit.message = 'Revert "feat(compenent): subject"'
-        mock_commit.parents = (Mock(),)
+def test_happy_path(mock):
+    mock.commit.commit.message = "feat(component): subject"
+    mock.commit.parents = (Mock(),)
 
-        self.assertEqual(
-            (True, "All checks passed"),
-            commit_checks.get_commit_checks_result(commits=(mock_commit,)),
-        )
+    assert commit_checks.get_commit_checks_result(commits=(mock.commit,)) == (True, "All checks passed")
 
-    def test_fixup_found(self):
-        mock_commit = Mock()
-        mock_commit.commit.message = "fixup! feat(component): subject"
 
-        self.assertEqual(
-            (False, "1 fixup and 0 squash commits found"),
-            commit_checks.get_commit_checks_result(commits=(mock_commit,)),
-        )
+def test_revert_commit_passes_checks(mock):
+    mock.commit.commit.message = 'Revert "feat(compenent): subject"'
+    mock.commit.parents = (Mock(),)
 
-    def test_squash_found(self):
-        mock_commit = Mock()
-        mock_commit.commit.message = "squash! feat(component): subject"
+    assert commit_checks.get_commit_checks_result(commits=(mock.commit,)) == (True, "All checks passed")
 
-        self.assertEqual(
-            (False, "0 fixup and 1 squash commits found"),
-            commit_checks.get_commit_checks_result(commits=(mock_commit,)),
-        )
 
-    #
-    def test_merge_commit_found(self):
-        mock_commit = Mock()
-        mock_commit.commit.message = "feat(component): subject"
-        mock_commit.parents = (Mock(), Mock())
+def test_fixup_found(mock):
+    mock.commit.commit.message = "fixup! feat(component): subject"
 
-        self.assertEqual(
-            (False, "Contains merge commits"),
-            commit_checks.get_commit_checks_result(commits=(mock_commit,)),
-        )
+    assert commit_checks.get_commit_checks_result(commits=(mock.commit,)) == (
+        False,
+        "1 fixup and 0 squash commits found",
+    )
 
-    def test_has_wrong_commit_message(self):
-        mock_commit = Mock()
-        mock_commit.commit.message = "chores(component): subject"
-        mock_commit.parents = (Mock(),)
 
-        self.assertEqual(
-            (False, "Invalid commit message format found"),
-            commit_checks.get_commit_checks_result(commits=(mock_commit,)),
-        )
+def test_squash_found(mock):
+    mock.commit.commit.message = "squash! feat(component): subject"
 
-    def test_has_duplicated_commit_messages(self):
-        mock_commit = Mock()
-        mock_commit.commit.message = "feat(component): subject"
-        mock_commit.parents = (Mock(),)
+    assert commit_checks.get_commit_checks_result(commits=(mock.commit,)) == (
+        False,
+        "0 fixup and 1 squash commits found",
+    )
 
-        self.assertEqual(
-            (False, "Duplicated commit messages found"),
-            commit_checks.get_commit_checks_result(commits=(mock_commit, mock_commit)),
-        )
+
+#
+def test_merge_commit_found(mock):
+    mock.commit.commit.message = "feat(component): subject"
+    mock.commit.parents = (Mock(), Mock())
+
+    assert commit_checks.get_commit_checks_result(commits=(mock.commit,)) == (False, "Contains merge commits")
+
+
+def test_has_duplicated_commit_messages(mock):
+    mock.commit.commit.message = "feat(component): subject"
+    mock.commit.parents = (Mock(),)
+
+    assert commit_checks.get_commit_checks_result(commits=(mock.commit, mock.commit)) == (
+        False,
+        "Duplicated commit messages found",
+    )

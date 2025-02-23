@@ -1,12 +1,9 @@
 import logging
-import re
-from typing import Sequence
+from collections.abc import Sequence
 
 from github.Commit import Commit
 from github.Repository import Repository
 
-# https://github.com/moneymeets/moneymeets-docs/blob/master/_posts/2020-03-18-commit-message-branch-name-guidelines.md
-ALLOWED_COMMIT_MESSAGE_TYPES = ("chore", "ci", "docs", "feat", "fix", "perf", "refactor", "style", "test")
 LOGGING_PREFIX = "\n  "
 
 
@@ -41,15 +38,6 @@ def has_duplicated_commit_messages(messages: Sequence[str]) -> Sequence[str]:
     return tuple({message for message in messages if messages.count(message) > 1})
 
 
-def has_wrong_commit_message(messages: Sequence[str]) -> Sequence[str]:
-    return tuple(
-        message
-        for message in messages
-        if re.match(rf"^({'|'.join(ALLOWED_COMMIT_MESSAGE_TYPES)})\([a-z\d-]+\): .+", strip_allowed_markers(message))
-        is None
-    )
-
-
 def get_commit_checks_result(commits: Sequence[Commit]) -> tuple[bool, str]:
     messages = get_commit_messages(commits)
     logging.info(
@@ -77,14 +65,5 @@ def get_commit_checks_result(commits: Sequence[Commit]) -> tuple[bool, str]:
             f"Found duplicated commit message(s): {LOGGING_PREFIX}{LOGGING_PREFIX.join(duplicated_messages)}",
         )
         return False, "Duplicated commit messages found"
-
-    if incorrect_commit_messages := has_wrong_commit_message(messages):
-        logging.info(
-            f"Found invalid commit message(s): {LOGGING_PREFIX}{LOGGING_PREFIX.join(incorrect_commit_messages)}"
-            f"\nAllowed types are: {ALLOWED_COMMIT_MESSAGE_TYPES}",
-        )
-        return False, "Invalid commit message format found"
-    else:
-        logging.info("Commit messages are correct, check passed!")
 
     return True, "All checks passed"

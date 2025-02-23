@@ -1,36 +1,28 @@
-name: 'Merge checks'
-description: 'Set a merge check status for the triggering commit to report on any problems that would block a merge.'
+name: Merge checks
+description: |
+  Set the merge check status for the triggering commit to report on any problems that would block the merge
+
 inputs:
   github_token:
-    description: 'Token with repository permissions, e.g. secrets.GITHUB_TOKEN of the caller workflow'
+    description: |
+      Token with repository permissions, e.g. `secrets.GITHUB_TOKEN` of the caller workflow
     required: true
   head_sha:
     description: |
-      Hash of HEAD commit.
-      
-      We can't consistently use the built-in GITHUB_SHA variable due to differences
-      in triggers, therefore HEAD_SHA should be passed explicitly and either set to
-      GITHUB_SHA, or to another appropriate value.
+      Hash of the HEAD commit.
+
+      We can't consistently use the built-in GITHUB_SHA variable due to differences in triggers, therefore HEAD_SHA
+      should be passed explicitly and either set to GITHUB_SHA, or to another appropriate value.
     required: true
-  python_version:
-    description: "Python version to use"
-    required: false
 
 runs:
-
-  using: "composite"
+  using: composite
 
   steps:
-    - uses: moneymeets/action-setup-python-poetry@master
-      with:
-        working_directory: ${{ github.action_path }}
-        with_checks: 'false'
-        # ToDo: Re-enable cache when https://github.com/actions/setup-python/issues/361 is fixed
-        poetry_cache_enabled: 'false'
+    - uses: astral-sh/setup-uv@v5
 
-    - run: poetry run --directory ${{ github.action_path }} merge_checks_runner
-      shell: bash
-      working-directory: ${{ github.workspace }}
+    - run: uv run --project "${{ github.action_path }}" merge_checks_runner
+      shell: sh
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         HEAD_SHA: ${{ inputs.head_sha }}

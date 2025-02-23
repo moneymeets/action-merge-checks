@@ -1,27 +1,68 @@
-[tool.poetry]
+[project]
 name = "merge-checks"
 version = "0.1.0"
-description = "GitHub Merge Checks"
-authors = ["moneymeets GmbH <service@moneymeets.com>"]
+description = "Midnight Commander's GitHub merge checks"
+authors = [
+    { name = "Yury V. Zaytsev", email = "yury@shurup.com" }
+]
+license = "MIT"
 
-[tool.poetry.scripts]
-merge_checks_runner = 'merge_checks.runner:run'
+requires-python = ">=3.12"
 
-[tool.poetry.dependencies]
-python = "~3.12"
-PyGithub = "*"
+dependencies = [
+    "PyGithub",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "*"
-pytest-cov = "*"
+[dependency-groups]
+dev = [
+    "hatch",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+]
 
-ruff = "*"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+merge_checks_runner = "merge_checks.runner:run"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "C4", # flake8-comprehensions
+    "COM", # flake8-commas
+    "DTZ", # flake8-datetimez
+    "E", # pycodestyle Error
+    "F", # Pyflakes
+    "I", # isort
+    "LOG", # flake8-logging
+    "PT", # flake8-pytest-style
+    "PTH", # flake8-use-pathlib
+    "Q", # flake8-quotes
+    "PYI", # flake8-pyi
+    "RSE", # flake8-raise
+    "RUF", # ruff-specific rules
+    "T10", # flake8-debugger
+    "T20", # flake8-print
+    "UP", # pyupgrade
+    "W", # pycodestyle Warning
+]
+
+ignore = [
+    "COM812", # comma consistency enforced by formatter
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[tool.pytest.ini_options]
+addopts = "--cov --cov-fail-under=95"
 
 [tool.coverage.run]
 branch = true
-source = ["."]
-omit = ["tests/*.py"]
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+source = ["src"]
