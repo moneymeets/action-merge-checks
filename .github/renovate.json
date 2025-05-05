@@ -4,6 +4,7 @@
     "config:recommended",
     ":semanticCommitTypeAll(chore)"
   ],
+  "configMigration": true,
   "dependencyDashboard": true,
   "separateMajorMinor": false,
   "ignoreDeps": [
@@ -17,7 +18,7 @@
   "packageRules": [
     {
       "groupName": "all",
-      "matchPackagePatterns": [
+      "matchPackageNames": [
         "*"
       ]
     },
@@ -28,10 +29,10 @@
         "github-releases",
         "github-tags"
       ],
-      "matchPackagePatterns": [
+      "semanticCommitScope": "actions",
+      "matchPackageNames": [
         "*"
-      ],
-      "semanticCommitScope": "actions"
+      ]
     },
     {
       "groupName": "python dependencies",
@@ -39,10 +40,10 @@
       "matchDatasources": [
         "pypi"
       ],
-      "matchPackagePatterns": [
+      "semanticCommitScope": "poetry",
+      "matchPackageNames": [
         "*"
-      ],
-      "semanticCommitScope": "poetry"
+      ]
     }
   ],
   "timezone": "Europe/Berlin",
